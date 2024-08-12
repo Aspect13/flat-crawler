@@ -1,0 +1,8 @@
+.env
+.venv
+dist
+*.session
+*.db
+tmp*
+.idea
+.idea/*

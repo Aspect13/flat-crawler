@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  tbilisi-flat:
+    build: .
+    container_name: tbilisi-flat
+    ports:
+      - "80:8000"
+    volumes:
+      - ./:/app
