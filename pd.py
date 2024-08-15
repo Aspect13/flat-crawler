@@ -25,6 +25,13 @@ class FlatList(BaseModel):
     def lowercase_district(cls, v):
         return v.lower() if isinstance(v, str) else v
 
+    @field_validator('floor', 'floors', mode='before')
+    @classmethod
+    def fix_floors(cls, v: int | str | None) -> Optional[int]:
+        if v:
+            return int(v)
+        return None
+
 
 # class FlatCreate(BaseModel):
 #     district: Districts | str
