@@ -46,12 +46,13 @@ async def dump_flats(client: TelegramClient, channel: Channel,
                 created_at=message.date,
                 edit_date=message.edit_date,
                 link_to_post=f'https://t.me/{channel.username}/{message.id}',
-                original_text=message.text
+                original_text=message.text,
+                district=district.lower()
             )
             parse_message(message.text, flat_object=f)
             session.add(f)
+            session.commit()
             n += 1
-            print(f)
         update_log = UpdateLog(
             district=district,
             number_of_flats=n

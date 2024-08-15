@@ -5,7 +5,7 @@ from models import Flat
 import aiohttp
 
 parser_regexp = {
-    'district': re.compile(r".*#(.*)\n"),
+    'district':  re.compile(r".*#([^\s]*)"),
     'address': re.compile(r"\n(.*)\n\n"),
     'rooms': re.compile(r"Комнат.*(\d+)"),
     'area': re.compile(r"Площадь.* (\d+)"),
@@ -34,5 +34,7 @@ def parse_message(message_text: str, flat_object: Optional[Flat] = None) -> Flat
     except AttributeError:
         flat_object.description = ''
     flat_object.address = parser_regexp['address'].search(message_text).group(1)
-    flat_object.district = parser_regexp['district'].search(message_text).group(1).strip()
+
+    if not flat_object.district:
+        flat_object.district = parser_regexp['district'].search(message_text).group(1).lower()
     return flat_object

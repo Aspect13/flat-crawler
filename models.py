@@ -1,6 +1,7 @@
 from datetime import datetime, UTC
 from typing import Optional
 
+from pydantic import field_validator
 from sqlmodel import Field, SQLModel
 
 
@@ -22,9 +23,14 @@ class Flat(SQLModel, table=True):
     edit_date: Optional[datetime] = None
     added_to_db: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
+    @field_validator('district', mode='before')
+    @classmethod
+    def lowercase_district(cls, v):
+        return v.lower() if isinstance(v, str) else v
+
 
 class UpdateLog(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     district: str
     number_of_flats: int
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC),)
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

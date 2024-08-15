@@ -8,6 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
+from config import settings
 from constants import Districts
 from db import engine, create_db_and_tables
 from main import aget_client, get_channel, dump_flats
@@ -65,7 +66,7 @@ async def update_flats(districts: List[Districts],
         )
     ).all()
     limits = set(i[0] for i in limits)
-    print(limits)
+    print(f'{limits=}')
     tasks = [i for i in districts if i not in limits]
     resp = {i: None for i in districts if i in limits}
     print(f'{tasks=}')
