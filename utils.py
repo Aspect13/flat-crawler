@@ -2,10 +2,9 @@ import re
 from typing import Optional
 
 from models import Flat
-import aiohttp
 
 parser_regexp = {
-    'district':  re.compile(r".*#([^\s]*)"),
+    'district': re.compile(r".*#([^\s]*)"),
     'address': re.compile(r"\n(.*)\n\n"),
     'rooms': re.compile(r"Комнат.*(\d+)"),
     'area': re.compile(r"Площадь.* (\d+)"),
@@ -28,7 +27,7 @@ def parse_message(message_text: str, flat_object: Optional[Flat] = None) -> Flat
     try:
         flat_object.location = parser_regexp['location'].search(message_text).group(1)
     except AttributeError:
-        flat_object.location = ''    
+        flat_object.location = ''
     try:
         flat_object.description = parser_regexp['description'].search(message_text).group(1)
     except AttributeError:
