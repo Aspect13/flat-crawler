@@ -1,10 +1,11 @@
+from contextlib import asynccontextmanager
 from datetime import timedelta, datetime, UTC
 from http.client import NOT_FOUND, MOVED_PERMANENTLY
 from typing import List
 
 from fastapi import FastAPI, Depends, Request
 from sqlalchemy import func
-from sqlmodel import Session, select
+from sqlmodel import Session, select, asc
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
@@ -16,7 +17,15 @@ from main import aget_client, get_channel, dump_flats
 from models import Flat, UpdateLog, RequestLog
 from pd import FlatList
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    # better run alembic upgrade head
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 origins = [
     "http://localhost",
     "http://127.0.0.1",
@@ -38,11 +47,6 @@ def get_session():
         yield session
 
 
-@app.on_event('startup')
-def on_startup():
-    create_db_and_tables()
-
-
 @app.get('/api/flats/', response_model=List[FlatList])
 async def read_items(skip: int = 0, limit: int = None, db: Session = Depends(get_session)):
     items = db.exec(select(Flat).offset(skip).limit(limit).order_by(Flat.id.desc())).fetchall()
@@ -61,7 +65,7 @@ async def update_flats(districts: List[Districts],
             UpdateLog.district.in_(set(districts)),
             UpdateLog.updated_at > (datetime.now(UTC) - timedelta(hours=1))
         ).order_by(
-            UpdateLog.updated_at.asc()
+            asc(UpdateLog.updated_at)
         ).group_by(
             UpdateLog.district
         )
@@ -109,4 +113,4 @@ async def dump_mums_hackers(
     return RedirectResponse('https://youtu.be/dQw4w9WgXcQ')
 
 
-app.mount('/', StaticFiles(directory='dist'), name='ui')
+app.mount('/', StaticFiles(directory='dist', check_dir=False), name='ui')

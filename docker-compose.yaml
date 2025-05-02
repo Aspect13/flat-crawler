@@ -1,7 +1,7 @@
 services:
-  tbilisi-flat:
+  flat-crawler:
     build: .
-    container_name: tbilisi-flat
+    container_name: flat-crawler
     ports:
       - "80:8000"
     volumes:

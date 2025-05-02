@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlmodel import Session, select
+from sqlmodel import Session, select, desc
 from telethon import TelegramClient
 from telethon.tl.types import PeerChannel, Channel
 
@@ -35,7 +35,7 @@ async def dump_flats(client: TelegramClient, channel: Channel,
             select(Flat.ff_id).where(
                 Flat.district == district
             ).order_by(
-                Flat.ff_id.desc()
+                desc(Flat.ff_id)
             )
         ).first()
         last_message_id = last_message_id or 0
