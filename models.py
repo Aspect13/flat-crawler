@@ -8,7 +8,7 @@ from sqlmodel import Field, SQLModel
 
 class Flat(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    ff_id: int = Field(unique=True, index=True)
+    city: str
     district: str
     address: str
     rooms: Optional[int] = None
@@ -18,11 +18,14 @@ class Flat(SQLModel, table=True):
     price: Optional[int] = None
     description: Optional[str] = None
     location: Optional[str] = None
-    original_text: Optional[str] = None
+    raw_text: Optional[str] = None
     link_to_post: str
     created_at: datetime
     edit_date: Optional[datetime] = None
     added_to_db: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    data_provider: str
+    provider_message_id: str
 
     @field_validator('district', mode='before')
     @classmethod
@@ -35,6 +38,7 @@ class UpdateLog(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     district: str
     number_of_flats: int
+    data_provider: str
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 

@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class Districts(StrEnum):
+class TbilisiDistricts(StrEnum):
     vake = 'ваке'
     vera = 'вера'
     saburtalo = 'сабуртало'

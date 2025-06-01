@@ -3,12 +3,13 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 
-from constants import Districts
+from constants import TbilisiDistricts
 
 
 class FlatList(BaseModel):
     id: int
-    district: Districts | str
+    city: str
+    district: str | TbilisiDistricts
     address: Optional[str]
     rooms: Optional[int]
     area: Optional[int]
@@ -19,6 +20,12 @@ class FlatList(BaseModel):
     link_to_post: Optional[str]
     created_at: datetime
     added_to_db: datetime
+    data_provider: str
+
+    @field_validator('city')
+    @classmethod
+    def capitalize_city(cls, v: str) -> str:
+        return v.capitalize()
 
     @field_validator('district')
     @classmethod
@@ -33,13 +40,6 @@ class FlatList(BaseModel):
         return None
 
 
-# class FlatCreate(BaseModel):
-#     district: Districts | str
-#     address: Optional[str]
-#     rooms: Optional[int]
-#     area: Optional[int]
-#     floor: Optional[int]
-#     floors: Optional[int]
-#     price: Optional[int]
-#     location: Optional[str]
-#     link_to_post: Optional[str]
+class UpdateFlatsRequest(BaseModel):
+    provider_name: str
+    district: Optional[str | TbilisiDistricts] = None
