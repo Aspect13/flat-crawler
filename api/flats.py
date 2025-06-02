@@ -17,7 +17,13 @@ from providers.abstract import DataProviderFactory
 @api_router.get('/providers/')
 async def get_available_providers():
     """Get list of available data providers"""
-    return {"providers": DataProviderFactory.get_available_providers()}
+    result = {"providers": {}}
+    for i in DataProviderFactory.get_available_providers():
+        result["providers"][i] = {
+            'available_cities': DataProviderFactory.create_provider(i).available_cities,
+            'available_districts': DataProviderFactory.create_provider(i).available_districts
+        }
+    return result
 
 
 @api_router.get('/flats/', response_model=List[FlatList])
