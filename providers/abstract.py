@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import AsyncIterator
+from typing import AsyncIterator, AsyncIterable
 from typing import Dict, Type, List
 
 from sqlmodel import Session
@@ -13,7 +13,7 @@ class DataProvider(ABC):
 
     @abstractmethod
     async def get_messages(self, session: Session, district: str | TbilisiDistricts | None = None, limit: int = None) -> \
-    AsyncIterator[Flat]:
+    AsyncIterator[Flat] | AsyncIterable[Flat]:
         """Fetch messages for a specific district"""
         pass
 
@@ -31,6 +31,18 @@ class DataProvider(ABC):
     @abstractmethod
     def provider_name(self) -> str:
         """Name of the data provider"""
+        pass
+
+    @property
+    @abstractmethod
+    def available_cities(self) -> set:
+        """Supported cities"""
+        pass
+
+    @property
+    @abstractmethod
+    def available_districts(self) -> set:
+        """Supported districts"""
         pass
 
 

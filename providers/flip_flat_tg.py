@@ -8,7 +8,7 @@ from telethon import TelegramClient
 from telethon.tl.types import Channel, PeerChannel
 
 from config import settings
-from constants import TbilisiDistricts
+from constants import TbilisiDistricts, Cities
 from models import Flat
 from providers.abstract import DataProvider, DataProviderFactory
 
@@ -43,6 +43,8 @@ parser_regexp = {
 
 class FlipFlatDataProvider(DataProvider):
     provider_name = 'flip_flat'
+    available_districts: set = set(TbilisiDistricts)
+    available_cities: set = {Cities.tbilisi}
 
     @property
     def settings(self) -> FlipFlatSettings:
@@ -53,8 +55,8 @@ class FlipFlatDataProvider(DataProvider):
         self.channel: Optional[Channel] = None
 
     async def initialize(self) -> None:
-        # await self.client.start()
-        await self.client.connect()
+        await self.client.start()
+        # await self.client.connect()
         self.channel = await self._get_channel()
 
     async def cleanup(self) -> None:
@@ -64,7 +66,7 @@ class FlipFlatDataProvider(DataProvider):
         if self.settings.channel_id:
             return await self.client.get_entity(PeerChannel(self.settings.channel_id))
         elif self.settings.channel_name:
-            return await self.client.get_entity(f't.me/{self.settings.tg_channel_name}')
+            return await self.client.get_entity(f't.me/{self.settings.channel_name}')
         raise ValueError("No Telegram channel configured")
 
     async def get_messages(self, session: Session, district: TbilisiDistricts,
@@ -90,10 +92,12 @@ class FlipFlatDataProvider(DataProvider):
                 limit=limit
         ):
             flat: Flat = self.parse_message(message.text)
+            flat.city = Cities.tbilisi
+            flat.data_provider = self.provider_name
             flat.provider_message_id = message.id
             flat.created_at = message.date
             flat.edit_date = message.edit_date
-            flat.source_link = f'https://t.me/{self.channel.username}/{message.id}'
+            flat.link_to_post = f'https://t.me/{self.channel.username}/{message.id}'
             flat.district = district.lower()
             flat.raw_text = message.text
             yield flat

@@ -1,1 +1,1 @@
-from .flip_flat_tg import FlipFlatDataProvider
+from providers.flip_flat_tg import FlipFlatDataProvider

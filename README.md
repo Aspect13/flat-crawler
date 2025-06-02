@@ -40,6 +40,7 @@ The application supports multiple data providers through the `DataProviderFactor
 2. Install test dependencies: `pip install -r requirements.txt`
 3. Run migrations: `alembic upgrade head`
 4. Run app: `uvicorn api.main:app --host 0.0.0.0 --port 80 --reload`
+5. When running for the first time, call [manual_init.py](manual_init.py)
 
 Note: Make sure your database is properly configured in `config.py` before running migrations.
 
