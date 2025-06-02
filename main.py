@@ -16,7 +16,11 @@ class FlatService:
     async def dump_flats(self, district: str | TbilisiDistricts, limit: Optional[int] = 100) -> int:
         n = 0
         with Session(engine) as session:
-            async for flat in self.data_provider.get_messages(session=session, district=district, limit=limit):
+            async for flat in self.data_provider.get_messages(
+                    session=session,
+                    district=district,
+                    limit=limit
+            ):
                 flat.data_provider = self.data_provider.provider_name
                 session.add(flat)
                 n += 1

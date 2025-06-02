@@ -14,21 +14,21 @@ from models import Flat, UpdateLog
 from providers.abstract import DataProviderFactory
 
 
-@api_router.get('/providers')
+@api_router.get('/providers/')
 async def get_available_providers():
     """Get list of available data providers"""
     return {"providers": DataProviderFactory.get_available_providers()}
 
 
-@api_router.get('/flats', response_model=List[FlatList])
+@api_router.get('/flats/', response_model=List[FlatList])
 async def read_items(skip: int = 0, limit: int = None, db: Session = Depends(get_session)):
-    items = db.exec(
-        select(Flat).offset(skip).limit(limit).order_by(Flat.id.desc())
-    ).fetchall()
+    q = select(Flat).offset(skip).limit(limit).order_by(Flat.id.desc())
+    # Use scalars() to extract model objects directly
+    items = db.exec(q).scalars().all()
     return items
 
 
-@api_router.post('/flats')
+@api_router.post('/flats/')
 async def update_flats(request: UpdateFlatsRequest, s: Session = Depends(get_session)):
     # todo: finish this api
 

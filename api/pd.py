@@ -1,15 +1,15 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, field_validator
-
-from constants import TbilisiDistricts
+from pydantic import BaseModel, field_validator, ConfigDict
 
 
 class FlatList(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     city: str
-    district: str | TbilisiDistricts
+    district: str
     address: Optional[str]
     rooms: Optional[int]
     area: Optional[int]
@@ -22,10 +22,10 @@ class FlatList(BaseModel):
     added_to_db: datetime
     data_provider: str
 
-    @field_validator('city')
-    @classmethod
-    def capitalize_city(cls, v: str) -> str:
-        return v.capitalize()
+    # @field_validator('city')
+    # @classmethod
+    # def capitalize_city(cls, v: str) -> str:
+    #     return v.capitalize()
 
     @field_validator('district')
     @classmethod
@@ -42,4 +42,4 @@ class FlatList(BaseModel):
 
 class UpdateFlatsRequest(BaseModel):
     provider_name: str
-    district: Optional[str | TbilisiDistricts] = None
+    district: Optional[str] = None

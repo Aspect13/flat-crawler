@@ -62,7 +62,7 @@ async def dump_mums_hackers(
         s.add(log)
         s.commit()
 
-    return Response("oops: 404")
+    # return Response("oops: 404", 404)
 
     return RedirectResponse('https://youtu.be/dQw4w9WgXcQ')
 
