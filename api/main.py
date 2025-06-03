@@ -7,7 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
-from api.routes import api_router
+from api.routes import api_router, debug_router
 from config import engine
 from models import RequestLog
 
@@ -33,6 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(api_router)
+app.include_router(debug_router)
 
 
 @app.get('/')

@@ -3,7 +3,7 @@ import re
 from datetime import datetime, UTC, timedelta
 from typing import Optional, AsyncIterator, Literal
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, SecretStr
 from pydantic_settings import BaseSettings
 from sqlalchemy import func
 from sqlmodel import Session, desc, select, asc
@@ -24,14 +24,12 @@ class FlipFlatSettings(BaseSettings):
         env_file=settings.model_config['env_file']
     )
 
-    app_id: int
-    api_hash: str
+    app_id: SecretStr
+    api_hash: SecretStr
     channel_id: Optional[int]
     channel_name: Optional[str]
     max_posts_per_task: int = 100
 
-
-settings.register_provider('flip_flat', FlipFlatSettings())
 
 parser_regexp = {
     'district': re.compile(r".*#([^\s]*)"),
@@ -47,15 +45,12 @@ parser_regexp = {
 
 class FlipFlatDataProvider(DataProvider):
     provider_name = 'flip_flat'
-    available_districts: set = set(TbilisiDistricts)
+    settings = FlipFlatSettings()
     available_cities: set = {Cities.tbilisi}
-
-    @property
-    def settings(self) -> FlipFlatSettings:
-        return settings.provider_settings[self.provider_name]
+    available_districts: set = set(TbilisiDistricts)
 
     def __init__(self):
-        self.client: TelegramClient = TelegramClient('anon', self.settings.app_id, self.settings.api_hash)
+        self.client: TelegramClient = TelegramClient('anon', self.settings.app_id.get_secret_value(), self.settings.api_hash.get_secret_value())
         self.channel: Optional[Channel] = None
 
     async def initialize(self) -> None:
@@ -164,4 +159,8 @@ class FlipFlatDataProvider(DataProvider):
 DataProviderFactory.register_provider(
     FlipFlatDataProvider.provider_name,
     FlipFlatDataProvider
+)
+settings.register_provider(
+    FlipFlatDataProvider.provider_name,
+    FlipFlatDataProvider.settings
 )
