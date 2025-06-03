@@ -6,3 +6,13 @@ class RateLimitError(Exception):
     """
     def __init__(self, message):
         super().__init__(message)
+
+
+class UnsupportedEntryError(Exception):
+    """Exception raised when an unsupported data entry is encountered.
+
+    This exception is used when the system encounters data entries or formats
+    that are not supported or cannot be processed by the application.
+    """
+    def __init__(self, message):
+        super().__init__(message)

@@ -67,7 +67,7 @@ async def dump_flats_from_provider(provider_name: str,
         async def dump_district(city: str, district: str) -> tuple[str, str, int, str | None]:
             try:
                 count = await service.dump_flats(city=city, district=district, limit=limit)
-            except RateLimitError as e:
+            except (RateLimitError, ValueError) as e:
                 return city, district, 0, str(e)
             return city, district, count, None
 

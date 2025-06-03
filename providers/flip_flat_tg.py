@@ -12,7 +12,7 @@ from telethon.tl.types import Channel, PeerChannel
 
 from config import settings
 from constants import TbilisiDistricts, Cities
-from exceptions import RateLimitError
+from exceptions import RateLimitError, UnsupportedEntryError
 from models import Flat, UpdateLog
 from providers.abstract import DataProvider, DataProviderFactory
 
@@ -76,12 +76,9 @@ class FlipFlatDataProvider(DataProvider):
     async def check_rate_limit(self, session: Session, city: str, district: TbilisiDistricts, **kwargs) -> bool:
         rate_limit = session.exec(
             select(
-                # UpdateLog.data_provider,
-                # UpdateLog.city,
-                # UpdateLog.district,
                 func.max(UpdateLog.updated_at)
             ).filter(
-                # UpdateLog.updated_at > (datetime.now(UTC) - timedelta(hours=1)),
+                UpdateLog.updated_at > (datetime.now(UTC) - timedelta(hours=1)),
                 UpdateLog.data_provider == self.provider_name,
                 UpdateLog.city == city,
                 UpdateLog.district == district,
@@ -89,8 +86,6 @@ class FlipFlatDataProvider(DataProvider):
                 asc(UpdateLog.updated_at)
             ).group_by(
                 UpdateLog.data_provider,
-                # UpdateLog.city,
-                # UpdateLog.district
             )
         ).first()
         if rate_limit:
@@ -107,10 +102,10 @@ class FlipFlatDataProvider(DataProvider):
             raise RuntimeError("Data source not initialized")
 
         if city and city not in self.available_cities:
-            raise ValueError(f"City {city} is not supported by this data provider")
+            raise UnsupportedEntryError(f"City {city} is not supported by this data provider")
 
         if district not in self.available_districts:
-            raise ValueError(f"District {district} is not supported by this data provider")
+            raise UnsupportedEntryError(f"District {district} is not supported by this data provider")
 
         last_message_id = session.exec(
             select(Flat.provider_message_id).where(

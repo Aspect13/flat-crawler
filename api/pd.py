@@ -59,5 +59,6 @@ UpdateFlatsResponse = dict[str, ProviderResponseItem]
 class ProviderDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    provider_name: str
     available_cities: list[str] = []
     available_districts: list[str] = []
