@@ -4,7 +4,6 @@ from typing import Dict, Type, List
 
 from sqlmodel import Session
 
-from constants import TbilisiDistricts
 from models import Flat
 
 
@@ -12,7 +11,7 @@ class DataProvider(ABC):
     """Abstract base class for flat data providers"""
 
     @abstractmethod
-    async def get_messages(self, session: Session, district: str | TbilisiDistricts | None = None, limit: int = None) -> \
+    async def get_messages(self, session: Session, city: str = None, district: str = None, limit: int = None) -> \
     AsyncIterator[Flat] | AsyncIterable[Flat]:
         """Fetch messages for a specific district"""
         pass
@@ -45,6 +44,11 @@ class DataProvider(ABC):
         """Supported districts"""
         pass
 
+    @abstractmethod
+    async def check_rate_limit(self, session: Session, city: str, district: str, **kwargs) -> bool:
+        """Check if rate limit is reached for a specific district"""
+        pass
+
 
 class DataProviderFactory:
     _providers: Dict[str, Type[DataProvider]] = {}
@@ -55,11 +59,17 @@ class DataProviderFactory:
         cls._providers[name] = provider_class
 
     @classmethod
+    def get_provider(cls, provider_name: str) -> Type[DataProvider]:
+        """Get a data provider class by name"""
+        try:
+            return cls._providers[provider_name]
+        except KeyError:
+            raise ValueError(f"Unknown data provider: {provider_name}")
+
+    @classmethod
     def create_provider(cls, provider_name: str) -> DataProvider:
         """Create a data provider instance"""
-        if provider_name not in cls._providers:
-            raise ValueError(f"Unknown data provider: {provider_name}")
-        return cls._providers[provider_name]()
+        return cls.get_provider(provider_name)()
 
     @classmethod
     def get_available_providers(cls) -> List[str]:

@@ -42,6 +42,12 @@ def upgrade() -> None:
         nullable=False,
         server_default='flip_flat'
     ))
+    op.add_column('update_log', sa.Column(
+        'city',
+        sa.String(),
+        nullable=False,
+        server_default='Tbilisi'
+    ))
     op.add_column('flat', sa.Column(
         'data_provider',
         sa.String(),
@@ -86,4 +92,5 @@ def downgrade() -> None:
     op.create_index('ix_flat_ff_id', 'flat', ['ff_id'], unique=True)
     op.drop_column('flat', 'data_provider')
     op.drop_column('flat', 'city')
+    op.drop_column('update_log', 'city')
     # ### end Alembic commands ###

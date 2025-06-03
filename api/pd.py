@@ -41,5 +41,23 @@ class FlatList(BaseModel):
 
 
 class UpdateFlatsRequest(BaseModel):
-    provider_name: str
-    district: Optional[str] = None
+    providers: list[str] | None = None
+    cities: list[str] | None = None
+    districts: list[str] | None = None
+
+
+class DistrictResponseItem(BaseModel):
+    new_entries: int
+    error: Optional[str] = None
+
+
+CityResponseItem = dict[str, DistrictResponseItem]
+ProviderResponseItem = dict[str, CityResponseItem]
+UpdateFlatsResponse = dict[str, ProviderResponseItem]
+
+
+class ProviderDetail(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    available_cities: list[str] = []
+    available_districts: list[str] = []

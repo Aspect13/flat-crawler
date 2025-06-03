@@ -36,6 +36,7 @@ class Flat(SQLModel, table=True):
 class UpdateLog(SQLModel, table=True):
     __tablename__ = 'update_log'
     id: Optional[int] = Field(default=None, primary_key=True)
+    city: str
     district: str
     number_of_flats: int
     data_provider: str

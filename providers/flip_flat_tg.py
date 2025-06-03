@@ -1,15 +1,19 @@
+import logging
 import re
-from typing import Optional, AsyncIterator
+from datetime import datetime, UTC, timedelta
+from typing import Optional, AsyncIterator, Literal
 
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
-from sqlmodel import Session, desc, select
+from sqlalchemy import func
+from sqlmodel import Session, desc, select, asc
 from telethon import TelegramClient
 from telethon.tl.types import Channel, PeerChannel
 
 from config import settings
 from constants import TbilisiDistricts, Cities
-from models import Flat
+from exceptions import RateLimitError
+from models import Flat, UpdateLog
 from providers.abstract import DataProvider, DataProviderFactory
 
 
@@ -69,13 +73,48 @@ class FlipFlatDataProvider(DataProvider):
             return await self.client.get_entity(f't.me/{self.settings.channel_name}')
         raise ValueError("No Telegram channel configured")
 
-    async def get_messages(self, session: Session, district: TbilisiDistricts,
+    async def check_rate_limit(self, session: Session, city: str, district: TbilisiDistricts, **kwargs) -> bool:
+        rate_limit = session.exec(
+            select(
+                # UpdateLog.data_provider,
+                # UpdateLog.city,
+                # UpdateLog.district,
+                func.max(UpdateLog.updated_at)
+            ).filter(
+                # UpdateLog.updated_at > (datetime.now(UTC) - timedelta(hours=1)),
+                UpdateLog.data_provider == self.provider_name,
+                UpdateLog.city == city,
+                UpdateLog.district == district,
+            ).order_by(
+                asc(UpdateLog.updated_at)
+            ).group_by(
+                UpdateLog.data_provider,
+                # UpdateLog.city,
+                # UpdateLog.district
+            )
+        ).first()
+        if rate_limit:
+            logging.warning(f"Rate limit reached for {self.provider_name}/{city}/{district} ({rate_limit})")
+            raise RateLimitError(f"Rate limit reached for {self.provider_name}/{city}/{district} ({rate_limit})")
+        return True
+
+    async def get_messages(self,
+                           session: Session,
+                           district: TbilisiDistricts,
+                           city: Literal[Cities.tbilisi] = Cities.tbilisi.value,
                            limit: int = 100) -> AsyncIterator[Flat]:
         if not self.channel:
             raise RuntimeError("Data source not initialized")
 
+        if city and city not in self.available_cities:
+            raise ValueError(f"City {city} is not supported by this data provider")
+
+        if district not in self.available_districts:
+            raise ValueError(f"District {district} is not supported by this data provider")
+
         last_message_id = session.exec(
             select(Flat.provider_message_id).where(
+                Flat.city == city,
                 Flat.district == district,
                 Flat.data_provider == self.provider_name
             ).order_by(
